@@ -39,7 +39,8 @@ use work.WF68K10_PKG.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
+use ieee.numeric_std_unsigned.all;
 
 entity WF68K10_ADDRESS_REGISTERS is
     port (
@@ -140,13 +141,13 @@ begin
     begin
         wait until CLK = '1' and CLK' event;
         if AR_MARK_USED = '1' then
-            AR_PNTR_WB_1 <= conv_integer(AR_SEL_WR_1);
-            AR_PNTR_WB_2 <= conv_integer(AR_SEL_WR_2);
+            AR_PNTR_WB_1 <= to_integer(unsigned(AR_SEL_WR_1)); -- XXX: Used to be conv_integer
+            AR_PNTR_WB_2 <= to_integer(unsigned(AR_SEL_WR_2)); -- XXX: Used to be conv_integer
         end if;
     end process INBUFFER;
 
-    AR_PNTR_1 <= conv_integer(AR_SEL_RD_1(2 downto 0));
-    AR_PNTR_2 <= conv_integer(AR_SEL_RD_2(2 downto 0));
+    AR_PNTR_1 <= to_integer(unsigned(AR_SEL_RD_1(2 downto 0))); -- XXX: Used to be conv_integer
+    AR_PNTR_2 <= to_integer(unsigned(AR_SEL_RD_2(2 downto 0))); -- XXX: Used to be conv_integer
 
     P_IN_USE: process
     begin
@@ -235,7 +236,7 @@ begin
                 elsif EXT_WORD(14 downto 12) = "111" and SBIT = '0' then
                     INDEX := USP_REG;
                 else
-                    INDEX :=  AR(conv_integer(EXT_WORD(14 downto 12)));
+                    INDEX :=  AR(to_integer(unsigned(EXT_WORD(14 downto 12)))); -- XXX: Used to be conv_integer
                 end if;
             elsif STORE_ADR_FORMAT = '1' then -- Sign extended address register;
                 if EXT_WORD(14 downto 12) = "111" and SBIT = '1' then
@@ -250,9 +251,9 @@ begin
                     INDEX(15 downto 0) := USP_REG(15 downto 0);
                 else
                     for i in 31 downto 16 loop
-                        INDEX(i) := AR(conv_integer(EXT_WORD(14 downto 12)))(15);
+                        INDEX(i) := AR(to_integer(unsigned(EXT_WORD(14 downto 12))))(15); -- XXX: Used to be conv_integer
                     end loop;
-                    INDEX(15 downto 0) := AR(conv_integer(EXT_WORD(14 downto 12)))(15 downto 0);
+                    INDEX(15 downto 0) := AR(to_integer(unsigned(EXT_WORD(14 downto 12))))(15 downto 0); -- XXX: Used to be conv_integer
                 end if;
             end if;
             --

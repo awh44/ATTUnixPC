@@ -66,7 +66,7 @@ use work.WF68K10_PKG.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
+use ieee.numeric_std_unsigned.all;
 
 entity WF68K10_OPCODE_DECODER is
     port (

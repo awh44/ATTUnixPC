@@ -1,4 +1,4 @@
-FILES = src/*
+FILES = src/**/*.vhd
 VHDLEX = .vhd
  
 # testbench

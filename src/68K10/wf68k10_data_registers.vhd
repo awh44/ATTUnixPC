@@ -36,7 +36,8 @@ use work.WF68K10_PKG.all;
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
+use ieee.numeric_std_unsigned.all;
 
 entity WF68K10_DATA_REGISTERS is
     port (
@@ -86,10 +87,10 @@ begin
         end if;
     end process INBUFFER;
 
-    DR_PNTR_WR_1 <= conv_integer(DR_SEL_WR_I1);
-    DR_PNTR_WR_2 <= conv_integer(DR_SEL_WR_I2);
-    DR_PNTR_RD_1 <= conv_integer(DR_SEL_RD_1(2 downto 0));
-    DR_PNTR_RD_2 <= conv_integer(DR_SEL_RD_2(2 downto 0));
+    DR_PNTR_WR_1 <= to_integer(unsigned(DR_SEL_WR_I1)); -- XXX: Used to be conv_integer
+    DR_PNTR_WR_2 <= to_integer(unsigned(DR_SEL_WR_I2)); -- XXX: Used to be conv_integer
+    DR_PNTR_RD_1 <= to_integer(unsigned(DR_SEL_RD_1(2 downto 0))); -- XXX: Used to be conv_integer
+    DR_PNTR_RD_2 <= to_integer(unsigned(DR_SEL_RD_2(2 downto 0))); -- XXX: Used to be conv_integer
 
     P_IN_USE: process
     begin
