@@ -1,0 +1,2 @@
+http://datasheets.chipdb.org/Motorola/68010/MC68010.pdf
+http://www.unixpc.org/UNIXPC_Ref.pdf
