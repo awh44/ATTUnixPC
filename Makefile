@@ -10,7 +10,7 @@ GHDL_CMD = ghdl
 SIMDIR = simulation
 # Simulation break condition
 #GHDL_SIM_OPT = --assert-level=error
-GHDL_SIM_OPT = --stop-time=500ns
+GHDL_SIM_OPT = --stop-time=1500ns
  
 WAVEFORM_VIEWER = gtkwave
  
@@ -35,7 +35,8 @@ run :
 	@$(SIMDIR)/$(TESTBENCH) $(GHDL_SIM_OPT) --vcdgz=$(SIMDIR)/$(TESTBENCH).vcdgz                                      
  
 view :
-	gunzip --stdout $(SIMDIR)/$(TESTBENCH).vcdgz | $(WAVEFORM_VIEWER) --vcd                                               
+	gunzip --stdout $(SIMDIR)/$(TESTBENCH).vcdgz | $(WAVEFORM_VIEWER) --vcd
+	rm *.o
  
 clean :
 	$(GHDL_CMD) --clean --workdir=simulation

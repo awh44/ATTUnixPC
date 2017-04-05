@@ -103,6 +103,8 @@ architecture tb_wf68k10 of tb_wf68k10 is
 	-- Other controls:
 	signal K6800n          : std_logic; -- Assert for 68K00 compatibility.
 
+	signal process_clock: std_logic := '0';
+
 begin
 
 	wf68k10_instantiation: wf68k10_top
@@ -156,23 +158,27 @@ begin
 
 		);
 
-	CLK <= '0' after 0 ns;
+	CLK <= process_clock;
+	clock_process: process(process_clock)
+	begin
+		process_clock <= not process_clock after 10 ns;
+	end process clock_process;
 
 	-- Address and data:
-	ADR_OUT <= x"00000000" after 0 ns;
+	--ADR_OUT <= x"00000000" after 0 ns;
 	DATA_IN <= x"0000" after 0 ns;
-	DATA_OUT <= x"0000" after 0 ns;
-	DATA_EN <= '0' after 0 ns;
+	--DATA_OUT <= x"0000" after 0 ns;
+	--DATA_EN <= '0' after 0 ns;
 
 	-- System control:
 	BERRn <= '0' after 0 ns;
 	RESET_INn <= '0' after 0 ns;
-	RESET_OUT <= '0' after 0 ns;
+	--RESET_OUT <= '0' after 0 ns;
 	HALT_INn <= '0' after 0 ns;
-	HALT_OUTn <= '0' after 0 ns;
+	--HALT_OUTn <= '0' after 0 ns;
 
 	-- Processor status:
-	FC_OUT <= "000" after 0 ns;
+	--FC_OUT <= "000" after 0 ns;
 
 	-- Interrupt control:
 	AVECn <= '0' after 0 ns;
@@ -180,23 +186,23 @@ begin
 
 	-- Aynchronous bus control:
 	DTACKn <= '0' after 0 ns;
-	ASn <= '0' after 0 ns;
-	RWn <= '0' after 0 ns;
-	RMCn <= '0' after 0 ns;
-	UDSn <= '0' after 0 ns;
-	LDSn <= '0' after 0 ns;
-	DBENn <= '0' after 0 ns;
-	BUS_EN <= '0' after 0 ns;
+	--ASn <= '0' after 0 ns;
+	--RWn <= '0' after 0 ns;
+	--RMCn <= '0' after 0 ns;
+	--UDSn <= '0' after 0 ns;
+	--LDSn <= '0' after 0 ns;
+	--DBENn <= '0' after 0 ns;
+	--BUS_EN <= '0' after 0 ns;
 
 	-- Synchronous peripheral control:
-	E <= '0' after 0 ns;
-	VMAn <= '0' after 0 ns;
-	VMA_EN <= '0' after 0 ns;
+	--E <= '0' after 0 ns;
+	--VMAn <= '0' after 0 ns;
+	--VMA_EN <= '0' after 0 ns;
 	VPAn <= '0' after 0 ns;
 
 	-- Bus arbitration control:
 	BRn <= '0' after 0 ns;
-	BGn <= '0' after 0 ns;
+	--BGn <= '0' after 0 ns;
 	BGACKn <= '0' after 0 ns;
 
 	-- Other controls:
