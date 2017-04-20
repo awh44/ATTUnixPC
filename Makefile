@@ -1,4 +1,4 @@
-FILES = src/**/*.vhd
+FILES = src/*.vhd src/**/*.vhd
 VHDLEX = .vhd
  
 # testbench
@@ -10,7 +10,7 @@ GHDL_CMD = ghdl
 SIMDIR = simulation
 # Simulation break condition
 #GHDL_SIM_OPT = --assert-level=error
-GHDL_SIM_OPT = --stop-time=1500ns
+GHDL_SIM_OPT = --stop-time=102ms
  
 WAVEFORM_VIEWER = gtkwave
  
@@ -27,8 +27,8 @@ ifeq ($(strip $(TESTBENCH)),)
 endif                                                                                             
  
 	mkdir -p simulation
-	$(GHDL_CMD) -i $(GHDL_FLAGS) --std=08 --workdir=simulation --work=work $(TESTBENCHPATH) $(FILES)
-	$(GHDL_CMD) -m  $(GHDL_FLAGS) --std=08 --workdir=simulation --work=work $(TESTBENCH)
+	$(GHDL_CMD) -i $(GHDL_FLAGS) --std=08 --workdir=simulation --work=work $(TESTBENCHPATH) $(FILES) # > /dev/null 2>&1
+	$(GHDL_CMD) -m  $(GHDL_FLAGS) --std=08 --workdir=simulation --work=work $(TESTBENCH) # > /dev/null 2>&1
 	@mv $(TESTBENCH) simulation/$(TESTBENCH)                                                                                
  
 run :

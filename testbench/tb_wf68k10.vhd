@@ -54,7 +54,17 @@ architecture tb_wf68k10 of tb_wf68k10 is
 			-- Other controls:
 			K6800n          : in std_logic -- Assert for 68K00 compatibility.
 		);
+	end component;
 
+	component memory is
+		port
+		(
+			enabled_n: in std_logic;
+			address: in std_logic_vector(23 downto 0);
+			--read_writen: out std_logic;
+			data_in: in std_logic_vector(15 downto 0);
+			data_out: out std_logic_vector(15 downto 0)
+		);
 	end component;
 
 	signal CLK             : std_logic;
@@ -158,55 +168,46 @@ begin
 
 		);
 
+	memory_instantiation: memory
+		port map
+		(
+			enabled_n => ASn,
+			address => ADR_OUT(23 downto 0),
+			--read_writen => RWn,
+			data_in => DATA_OUT,
+			data_out => DATA_IN
+		);
+
 	CLK <= process_clock;
 	clock_process: process(process_clock)
 	begin
-		process_clock <= not process_clock after 10 ns;
+		process_clock <= not process_clock after 50 ns;
 	end process clock_process;
 
-	-- Address and data:
-	--ADR_OUT <= x"00000000" after 0 ns;
-	DATA_IN <= x"0000" after 0 ns;
-	--DATA_OUT <= x"0000" after 0 ns;
-	--DATA_EN <= '0' after 0 ns;
+  	-- Address and data:
+  	--DATA_IN <= x"1111" after 0 ns;
 
-	-- System control:
-	BERRn <= '0' after 0 ns;
-	RESET_INn <= '0' after 0 ns;
-	--RESET_OUT <= '0' after 0 ns;
-	HALT_INn <= '0' after 0 ns;
-	--HALT_OUTn <= '0' after 0 ns;
+  	-- System control:
+  	BERRn <= '1' after 0 ns;
+  	RESET_INn <= '0' after 0 ns, '1' after 101 ms;
+  	HALT_INn <= '0' after 0 ns, '1' after 101 ms;
 
-	-- Processor status:
-	--FC_OUT <= "000" after 0 ns;
+  	-- Interrupt control:
+  	AVECn <= '1' after 0 ns;
+  	IPLn <= "111" after 0 ns;
 
-	-- Interrupt control:
-	AVECn <= '0' after 0 ns;
-	IPLn <= "000" after 0 ns;
+  	-- Aynchronous bus control:
+  	DTACKn <= '1' after 0 ns; --, '0' after 100 us;
 
-	-- Aynchronous bus control:
-	DTACKn <= '0' after 0 ns;
-	--ASn <= '0' after 0 ns;
-	--RWn <= '0' after 0 ns;
-	--RMCn <= '0' after 0 ns;
-	--UDSn <= '0' after 0 ns;
-	--LDSn <= '0' after 0 ns;
-	--DBENn <= '0' after 0 ns;
-	--BUS_EN <= '0' after 0 ns;
+  	-- Synchronous peripheral control:
+  	VPAn <= '0' after 0 ns;
 
-	-- Synchronous peripheral control:
-	--E <= '0' after 0 ns;
-	--VMAn <= '0' after 0 ns;
-	--VMA_EN <= '0' after 0 ns;
-	VPAn <= '0' after 0 ns;
+  	-- Bus arbitration control:
+  	BRn <= '0' after 0 ns, '1' after 100 ms;
+  	BGACKn <= '1' after 0 ns;
 
-	-- Bus arbitration control:
-	BRn <= '0' after 0 ns;
-	--BGn <= '0' after 0 ns;
-	BGACKn <= '0' after 0 ns;
-
-	-- Other controls:
-	K6800n <= '0' after 0 ns, '1' after 5 ns;
+  	-- Other controls:
+  	K6800n <= '1' after 0 ns;
 
 
 end tb_wf68k10;
