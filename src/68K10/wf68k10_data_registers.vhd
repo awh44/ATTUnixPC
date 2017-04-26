@@ -69,6 +69,7 @@ end entity WF68K10_DATA_REGISTERS;
 architecture BEHAVIOUR of WF68K10_DATA_REGISTERS is
 type DR_TYPE is array(0 to 7) of std_logic_vector(31 downto 0);
 signal DR               : DR_TYPE; -- Data registers D0 to D7.
+signal D0               : std_logic_vector(31 downto 0);
 signal DR_PNTR_WR_1     : integer range 0 to 7;
 signal DR_PNTR_WR_2     : integer range 0 to 7;
 signal DR_PNTR_RD_1     : integer range 0 to 7;
@@ -86,6 +87,8 @@ begin
             DR_SEL_WR_I2 <= DR_SEL_WR_2;
         end if;
     end process INBUFFER;
+
+	D0 <= DR(0);
 
     DR_PNTR_WR_1 <= to_integer(unsigned(DR_SEL_WR_I1)); -- XXX: Used to be conv_integer
     DR_PNTR_WR_2 <= to_integer(unsigned(DR_SEL_WR_I2)); -- XXX: Used to be conv_integer

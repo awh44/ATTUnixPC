@@ -136,7 +136,11 @@ signal PC_I             : std_logic_vector(31 downto 0); -- Active program count
 signal SCALE            : std_logic_vector(1 downto 0); -- Scale information for the index.
 signal SFC_REG          : std_logic_vector(2 downto 0); -- Special function code registers.
 signal USP_REG          : std_logic_vector(31 downto 0); -- User stack pointer (refers to A7 in the user mode.).
+signal A0               : std_logic_vector(31 downto 0);
 begin
+
+	A0 <= AR(0);
+
     INBUFFER: process
     begin
         wait until CLK = '1' and CLK' event;
