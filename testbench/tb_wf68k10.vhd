@@ -184,13 +184,10 @@ begin
 		process_clock <= not process_clock after 50 ns;
 	end process clock_process;
 
-  	-- Address and data:
-  	--DATA_IN <= x"1111" after 0 ns;
-
   	-- System control:
   	BERRn <= '1' after 0 ns;
-  	RESET_INn <= '0' after 0 ns, '1' after 1 ms;
-  	HALT_INn <= '0' after 0 ns, '1' after 1 ms;
+  	RESET_INn <= '0' after 0 ns, '1' after 10 us;
+  	HALT_INn <= '0' after 0 ns, '1' after 10 us;
 
   	-- Interrupt control:
   	AVECn <= '1' after 0 ns;

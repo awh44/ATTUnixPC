@@ -10,7 +10,7 @@ GHDL_CMD = ghdl
 SIMDIR = simulation
 # Simulation break condition
 #GHDL_SIM_OPT = --assert-level=error
-GHDL_SIM_OPT = --stop-time=2ms --ieee-asserts=disable
+GHDL_SIM_OPT = --stop-time=100us --ieee-asserts=disable
  
 WAVEFORM_VIEWER = gtkwave
  
