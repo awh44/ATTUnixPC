@@ -14,51 +14,71 @@ entity memory is
 end memory;
 
 architecture memory of memory is
-	type memory_array is array(0 to 32) of std_logic_vector(7 downto 0);
-	signal rom: memory_array :=
-	(
-		0 => x"00",
-		1 => x"00",
-		2 => x"00",
-		3 => x"00",
-		4 => x"00", -- Program counter highest byte
-		5 => x"00", -- Program counter second byte
-		6 => x"00", -- Program counter third byte
-		7 => x"08", -- Program counter lowest byte
-		8 => x"70", -- MOVE.L #3, D0 high byte
-		9 => x"03", -- MOVE.L #3, D0 low byte
-		10 => x"30", -- MOVE.W #14, A0
-		11 => x"7C", -- MOVE.W #14, A0
-		12 => x"00", -- MOVE.W #14, A0
-		13 => x"14", -- MOVE.W #14, A0
-		14 => x"30", -- MOVE.W D0, (A0) high byte
-		15 => x"80", -- MOVE.W D0, (A0) low byte
-		16 => x"32", -- MOVE.W (A0), D1
-		17 => x"10", -- MOVE.W (A0), D1
-		others => x"00"
-	);
+	constant ROM_BASE: integer := 16#000000#; -- will eventually be 0x800000
+	constant ROM_LIMIT: integer := 30; -- will eventually be 0xBFFFFF
+	component rom is
+		port
+		(
+			enabled: in std_logic;
+			address: in integer;
+			data_out: out std_logic_vector(15 downto 0)
+		);
+	end component;
+	signal rom_enabled: std_logic;
+	signal rom_address: integer;
 
-	signal mem0x14: std_logic_vector(15 downto 0);
+	constant RAM_BASE: integer := ROM_LIMIT + 2;
+	constant RAM_LIMIT: integer := 62;
+	component ram is
+		port
+		(
+			enabled: in std_logic;
+			address: in integer;
+			read_writen: in std_logic;
+			data_in: in std_logic_vector(15 downto 0);
+			data_out: out std_logic_vector(15 downto 0)
+		);
+	end component;
+	signal ram_enabled: std_logic;
+	signal ram_address: integer;
 begin
-	mem0x14 <= rom(20) & rom(21);
+	rom_instantiation: rom
+		port map
+		(
+			enabled => rom_enabled,
+			address => rom_address,
+			data_out => data_out
+		);
+
+	ram_instantiation: ram
+		port map
+		(
+			enabled => ram_enabled,
+			address => ram_address,
+			read_writen => read_writen,
+			data_in => data_in,
+			data_out => data_out
+		);
 
 	process (enabled_n)
 		variable addr: integer;
 	begin
-		if enabled_n'event and enabled_n = '0' then
+		if enabled_n = '0' then
 			addr := to_integer(unsigned(address & '0'));
-			if (addr > 30) then
-				addr := 30;
+			if addr >= ROM_BASE and addr <= ROM_LIMIT
+			then
+				rom_enabled <= '1';
+				rom_address <= addr - ROM_BASE;
 			end if;
 
-			if read_writen = '1' then
-				data_out <= rom(addr) & rom(addr + 1);
-			else
-				data_out <= (others => 'Z');
-				rom(addr) <= data_in(15 downto 8) ;
-				rom(addr + 1) <= data_in(7 downto 0);
+			if addr >= RAM_BASE and addr <= RAM_LIMIT
+			then
+				ram_enabled <= '1';
+				ram_address <= addr - RAM_BASE;
 			end if;
 		else
+			rom_enabled <= '0';
+			ram_enabled <= '0';
 			data_out <= (others => 'Z');
 		end if;
 	end process;
