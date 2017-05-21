@@ -15,11 +15,11 @@ entity address_decoder is
 end address_decoder;
 
 architecture address_decoder of address_decoder is
-	constant ROM_BASE: integer := 16#000000#; -- will eventually be 0x800000
-	constant ROM_LIMIT: integer := ROM_BASE + 30; -- will eventually be 0xBFFFFF
-
-	constant RAM_BASE: integer := ROM_LIMIT + 2;
+	constant RAM_BASE: integer := 0;
 	constant RAM_LIMIT: integer := RAM_BASE + 30;
+
+	constant ROM_BASE: integer := 16#800000#;
+	constant ROM_LIMIT: integer := ROM_BASE + 30; -- will eventually be 0xBFFFFF
 
 	constant ROMLMAP_BASE: integer := 16#E43000#;
 	constant ROMLMAP_LIMIT: integer := 16#E43000#;

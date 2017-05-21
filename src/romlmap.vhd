@@ -20,14 +20,12 @@ begin
 		-- need to drive the address line high again
 		if reset_n'event and reset_n = '0'
 		then
-			romlmap_n_internal <= '0';
-			romlmap_n <= '1';
+			romlmap_n <= '0';
 		elsif enabled'event and enabled = '1'
 		then
 			-- If data value 0x8000 is written to us, then we need to deassert
 			-- the address line
 			if inval = x"8000" then
-				romlmap_n_internal <= '1';
 				romlmap_n <= '1';
 			end if;
 		end if;

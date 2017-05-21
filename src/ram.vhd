@@ -19,9 +19,9 @@ architecture ram of ram is
 		others => x"00"
 	);
 
-	signal mem0x00: std_logic_vector(15 downto 0);
+	signal mem0x02: std_logic_vector(15 downto 0);
 begin
-	mem0x00 <= ram_array(0) & ram_array(1);
+	mem0x02 <= ram_array(2) & ram_array(3);
 
 	process (enabled)
 	begin
