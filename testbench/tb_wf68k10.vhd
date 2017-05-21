@@ -56,13 +56,33 @@ architecture tb_wf68k10 of tb_wf68k10 is
 		);
 	end component;
 
-	component memory is
+	component address_decoder is
 		port
 		(
 			enabled_n: in std_logic;
-			address: in std_logic_vector(23 downto 1);
+			address_in: in std_logic_vector(23 downto 1);
+			address_out: out integer;
+			rom_enabled: out std_logic;
+			ram_enabled: out std_logic
+		);
+	end component;
+
+	component ram is
+		port
+		(
+			enabled: in std_logic;
+			address: in integer;
 			read_writen: in std_logic;
 			data_in: in std_logic_vector(15 downto 0);
+			data_out: out std_logic_vector(15 downto 0)
+		);
+	end component;
+
+	component rom is
+		port
+		(
+			enabled: in std_logic;
+			address: in integer;
 			data_out: out std_logic_vector(15 downto 0)
 		);
 	end component;
@@ -115,6 +135,10 @@ architecture tb_wf68k10 of tb_wf68k10 is
 
 	signal process_clock: std_logic := '0';
 
+	signal ad_address_in: std_logic_vector(23 downto 1);
+	signal ad_address_out: integer;
+	signal ad_rom_enabled: std_logic;
+	signal ad_ram_enabled: std_logic;
 begin
 
 	wf68k10_instantiation: wf68k10_top
@@ -168,15 +192,36 @@ begin
 
 		);
 
-	memory_instantiation: memory
+	address_decoder_instantiation: address_decoder
 		port map
 		(
 			enabled_n => ASn,
-			address => ADR_OUT(23 downto 1),
+			address_in => ad_address_in,
+			address_out => ad_address_out,
+			rom_enabled => ad_rom_enabled,
+			ram_enabled => ad_ram_enabled
+		);
+
+	ram_instantiation: ram
+		port map
+		(
+			enabled => ad_ram_enabled,
+			address => ad_address_out,
 			read_writen => RWn,
 			data_in => DATA_OUT,
 			data_out => DATA_IN
 		);
+
+	rom_instantiation: rom
+		port map
+		(
+			enabled => ad_rom_enabled,
+			address => ad_address_out,
+			data_out => DATA_IN
+		);
+
+	ad_address_in <= (ADR_OUT(23) or '0') & (ADR_OUT(22 downto 1));
+
 
 	CLK <= process_clock;
 	clock_process: process(process_clock)
