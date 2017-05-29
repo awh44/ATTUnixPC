@@ -98,6 +98,40 @@ architecture tb_wf68k10 of tb_wf68k10 is
 		);
 	end component;
 
+	component serial7201 is
+		port
+		(
+			clock: in std_logic;
+			reset_n: in std_logic;
+			dcd_a_n: in std_logic;
+			rxc_b_n: in std_logic;
+			dcc_b_n: in std_logic;
+			cts_b_n: in std_logic;
+			txc_b_n: in std_logic;
+			txd_b: out std_logic;
+			rxd_b: in std_logic;
+			syn_b_n: out std_logic;
+			data_in: in std_logic_vector(7 downto 0);
+			write_n: in std_logic;
+			read_n: in std_logic;
+			chip_select_n: in std_logic;
+			control_datan: in std_logic;
+			channel_b_an: in std_logic;
+			dtr_b_n: out std_logic;
+			int_ack_n: in std_logic;
+			int_n: out std_logic;
+			priority_in_n: in std_logic;
+			dtr_a_n: out std_logic;
+			syn_a_n: inout std_logic;
+			rxd_a: in std_logic;
+			rxc_a_n: in std_logic;
+			txc_a_n: in std_logic;
+			txd_a: out std_logic;
+			rts_a_n: out std_logic;
+			cts_a_n: in std_logic
+		);
+	end component;
+
 	signal CLK             : std_logic;
 
 	-- Address and data:
