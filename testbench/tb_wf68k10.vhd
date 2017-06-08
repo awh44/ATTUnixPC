@@ -64,7 +64,8 @@ architecture tb_wf68k10 of tb_wf68k10 is
 			address_out: out integer;
 			rom_enabled: out std_logic;
 			ram_enabled: out std_logic;
-			romlmap_enabled: out std_logic
+			romlmap_enabled: out std_logic;
+			serial_enabled_n: out std_logic
 		);
 	end component;
 
@@ -105,13 +106,14 @@ architecture tb_wf68k10 of tb_wf68k10 is
 			reset_n: in std_logic;
 			dcd_a_n: in std_logic;
 			rxc_b_n: in std_logic;
-			dcc_b_n: in std_logic;
+			dcd_b_n: in std_logic;
 			cts_b_n: in std_logic;
 			txc_b_n: in std_logic;
 			txd_b: out std_logic;
 			rxd_b: in std_logic;
 			syn_b_n: out std_logic;
 			data_in: in std_logic_vector(7 downto 0);
+			data_out: out std_logic_vector(7 downto 0);
 			write_n: in std_logic;
 			read_n: in std_logic;
 			chip_select_n: in std_logic;
@@ -120,7 +122,6 @@ architecture tb_wf68k10 of tb_wf68k10 is
 			dtr_b_n: out std_logic;
 			int_ack_n: in std_logic;
 			int_n: out std_logic;
-			priority_in_n: in std_logic;
 			dtr_a_n: out std_logic;
 			syn_a_n: inout std_logic;
 			rxd_a: in std_logic;
@@ -187,7 +188,27 @@ architecture tb_wf68k10 of tb_wf68k10 is
 	signal ad_romlmap_enabled: std_logic;
 
 	signal romlmap_romlmap_n: std_logic;
+
+	signal s7201_clock: std_logic := '0';
+	signal s7201_dcd_n: std_logic_vector(1 downto 0);
+	signal s7201_rxc_n: std_logic_vector(1 downto 0);
+	signal s7201_txc_n: std_logic_vector(1 downto 0);
+	signal s7201_txd: std_logic_vector(1 downto 0);
+	signal s7201_rxd: std_logic_vector(1 downto 0);
+	signal s7201_cts_n: std_logic_vector(1 downto 0);
+	signal s7201_rts_n: std_logic_vector(1 downto 0);
+	signal s7201_sync_n: std_logic_vector(1 downto 0);
+	signal s7201_data: std_logic_vector(7 downto 0);
+	signal s7201_read_n: std_logic;
+	signal s7201_chip_select_n: std_logic;
+	signal s7201_dtr_n: std_logic_vector(1 downto 0);
+	signal s7201_int_ack_n: std_logic;
+	signal s7201_int_n: std_logic;
+
+	signal low0: std_logic;
 begin
+
+	low0 <= '0';
 
 	wf68k10_instantiation: wf68k10_top
 		port map
@@ -248,7 +269,8 @@ begin
 			address_out => ad_address_out,
 			rom_enabled => ad_rom_enabled,
 			ram_enabled => ad_ram_enabled,
-			romlmap_enabled => ad_romlmap_enabled
+			romlmap_enabled => ad_romlmap_enabled,
+			serial_enabled_n => s7201_chip_select_n
 		);
 
 	ram_instantiation: ram
@@ -277,6 +299,45 @@ begin
 			enabled => ad_romlmap_enabled,
 			romlmap_n => romlmap_romlmap_n
 		);
+
+	serial7201_instantiation: serial7201
+		port map
+		(
+			clock => s7201_clock,
+			reset_n => RESET_INn,
+			dcd_a_n => s7201_dcd_n(0),
+			rxc_b_n => s7201_rxc_n(1),
+			dcd_b_n => s7201_dcd_n(1),
+			cts_b_n => s7201_cts_n(1),
+			txc_b_n => s7201_txc_n(1),
+			txd_b => s7201_txd(1),
+			rxd_b => s7201_rxd(1),
+			syn_b_n => s7201_sync_n(1),
+			data_in => DATA_OUT(7 downto 0),
+			data_out => DATA_IN(7 downto 0),
+			write_n => RWn,
+			read_n => s7201_read_n,
+			chip_select_n => s7201_chip_select_n,
+			control_datan => ADR_OUT(2),
+			channel_b_an => ADR_OUT(1),
+			dtr_b_n => s7201_dtr_n(1),
+			int_ack_n => s7201_int_ack_n,
+			int_n => s7201_int_n,
+			dtr_a_n => s7201_dtr_n(0),
+			syn_a_n => s7201_sync_n(0),
+			rxd_a => s7201_rxd(0),
+			rxc_a_n => s7201_rxc_n(0),
+			txc_a_n => s7201_txc_n(0),
+			txd_a => s7201_txd(0),
+			rts_a_n => s7201_rts_n(0),
+			cts_a_n => s7201_cts_n(0)
+		);
+	-- 2.45 MHz clock?
+	s7201_clock_process: process(s7201_clock)
+	begin
+		s7201_clock <= not s7201_clock after 408 ns;
+	end process s7201_clock_process;
+	s7201_read_n <= not RWn;
 
 	ad_address_in <=
 		(ADR_OUT(23) or (not romlmap_romlmap_n)) & (ADR_OUT(22 downto 1));

@@ -10,7 +10,8 @@ entity address_decoder is
 		address_out: out integer;
 		rom_enabled: out std_logic;
 		ram_enabled: out std_logic;
-		romlmap_enabled: out std_logic
+		romlmap_enabled: out std_logic;
+		serial_enabled_n: out std_logic
 	);
 end address_decoder;
 
@@ -23,6 +24,9 @@ architecture address_decoder of address_decoder is
 
 	constant ROMLMAP_BASE: integer := 16#E43000#;
 	constant ROMLMAP_LIMIT: integer := 16#E43000#;
+
+	constant SERIAL_BASE: integer := 16#E50000#;
+	constant SERIAL_LIMIT: integer := 16#E50006#;
 begin
 	process (enabled_n)
 		variable addr: integer;
@@ -41,6 +45,9 @@ begin
 			then
 				romlmap_enabled <= '1';
 				address_out <= addr - ROMLMAP_BASE;
+			elsif addr >= SERIAL_BASE and addr <= SERIAL_LIMIT
+			then
+				serial_enabled_n <= '0';
 			end if;
 		else
 			rom_enabled <= '0';

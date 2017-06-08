@@ -1,5 +1,6 @@
 library ieee;
-use ieee.std_logic_1164;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 -- References:
 -- 	UNIXPC_Ref.pdf, page 275
@@ -17,7 +18,7 @@ entity serial7201 is
 		-- 4 - receiver clock input for channel B
 		rxc_b_n: in std_logic;
 		-- 5 - data carrier detect input for channel B
-		dcc_b_n: in std_logic;
+		dcd_b_n: in std_logic;
 		-- 6 - clear to send for channel B
 		cts_b_n: in std_logic;
 		-- 7 - transmitter clock for channel B
@@ -31,6 +32,7 @@ entity serial7201 is
 		-- 11 - wait output for channel B; don't need
 		-- 12-19 - data bus
 		data_in: in std_logic_vector(7 downto 0);
+		data_out: out std_logic_vector(7 downto 0);
 		-- 20 - ground
 		-- 21 - write strobe input
 		write_n: in std_logic;
@@ -48,8 +50,8 @@ entity serial7201 is
 		int_ack_n: in std_logic;
 		-- 28 - interrupt request
 		int_n: out std_logic;
-		-- 29 - interrupt priority input
-		priority_in_n: in std_logic;
+		-- 29 - interrupt priority input - just grounded, don't need
+		--priority_in_n: in std_logic;
 		-- 30 - interrupt priority output - don't need
 		-- 31 - data terminal output for channel A
 		dtr_a_n: out std_logic;
@@ -72,6 +74,82 @@ entity serial7201 is
 end serial7201;
 
 architecture serial7201 of serial7201 is
+	signal last_reset_n: std_logic;
+
+	type register_array is array(0 to 7) of std_logic_vector(7 downto 0);
+	type chan_registers is array(0 to 1) of register_array;
+	signal control_registers: chan_registers;
+	signal status_registers: chan_registers;
+
+	-- Double-buffered
+	type tx_array is array(0 to 1) of std_logic_vector(7 downto 0);
+	type chan_tx_buffers is array(0 to 1) of tx_array;
+	-- Quadruple buffered
+	type rx_array is array(0 to 3) of std_logic_vector(7 downto 0);
+	type chan_rx_buffers is array(0 to 1) of rx_array;
+
+	signal tx_buffers: chan_tx_buffers;
+	signal rx_buffers: chan_rx_buffers;
 begin
+	clock_process: process (clock)
+	begin
+		if (last_reset_n = '1' and reset_n = '1')
+		then -- If we've been reset'ing for one full cycle, do a reset
+			txd_a <= '1';
+			txd_b <= '1';
+			int_n <= '1';
+			control_registers(0)(0)(0) <= '0';
+			control_registers(0)(0)(1) <= '0';
+			control_registers(0)(0)(2) <= '0';
+			control_registers(1)(0)(0) <= '0';
+			control_registers(1)(0)(1) <= '0';
+			control_registers(1)(0)(2) <= '0';
+		else
+			last_reset_n <= reset_n;
+		end if;
+	end process clock_process;
+
+	chip_select_process: process (chip_select_n)
+		variable reg: integer;
+		variable chan: integer;
+		variable value: integer;
+	begin
+		if (chip_select_n = '0')
+		then
+			if (channel_b_an = '0')
+			then
+				chan := 0;
+			else
+				chan := 1;
+			end if;
+
+			if (control_datan = '1')
+			then
+				reg := to_integer(unsigned(control_registers(chan)(0)(2 downto 0)));
+				if (write_n = '0')
+				then
+					control_registers(chan)(reg) <= data_in;
+				elsif (read_n = '0')
+				then
+					data_out <= status_registers(chan)(reg);
+				end if;
+			else
+				if (write_n = '0')
+				then
+					tx_buffers(chan)(1) <= data_in;
+				elsif (read_n = '0')
+				then
+					data_out <= rx_buffers(chan)(3);
+				end if;
+			end if;
+		else
+			data_out <= (others => 'Z');
+		end if;
+	end process chip_select_process;
+
+	rx_a_process: process (rxc_a_n)
+	begin
+
+	end process rx_a_process;
 
 end serial7201;
