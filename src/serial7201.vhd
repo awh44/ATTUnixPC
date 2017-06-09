@@ -118,8 +118,13 @@ architecture serial7201 of serial7201 is
 	----------------------------------------------------------------------------
 
 	signal chan_a_tx0: std_logic_vector(7 downto 0);
+	signal chan_a_rx0: std_logic_vector(7 downto 0);
+
+	signal rx_transferred_a: integer;
+	signal rx_state_a: integer;
 begin
 	chan_a_tx0 <= tx_buffers(CHAN_A)(0);
+	chan_a_rx0 <= rx_buffers(CHAN_A)(0);
 
 	clock_process: process (clock)
 	begin
@@ -199,6 +204,8 @@ begin
 				then
 					tx_buffers(CHAN_A)(0) <= tx_buffers(CHAN_A)(1);
 					tx_transferred(CHAN_A) <= 0;
+
+					--TODO: check registers
 					if (false)
 					then
 						tx_state(CHAN_A) <= STATE_PARITY;
@@ -220,12 +227,47 @@ begin
 		end if;
 	end process tx_a_process;
 
---	rx_a_process: process (rxc_a_n)
---	begin
---		if (dcd_a_n = '0')
---		then
---			rx_buffers(0)(0) <= rx_buffers(0)(0)(6 downto 0) & rxd_a;
---		end if;
---	end process rx_a_process;
+	rx_a_process: process (internal_reset, rxc_a_n)
+	begin
+		if (internal_reset'event and internal_reset = '1')
+		then
+			rx_transferred(CHAN_A) <= 0;
+			rx_state(CHAN_A) <= STATE_IDLE;
+			rx_buffers(CHAN_A)(0) <= x"00";
+		elsif (dcd_a_n = '0' and rxc_a_n'event and rxc_a_n = '0')
+		then
+			if (rx_state(CHAN_A) = STATE_IDLE and rxd_a = '0')
+			then
+				rx_state(CHAN_A) <= STATE_DATA;
+			elsif (rx_state(CHAN_A) = STATE_DATA)
+			then
+				-- TODO: Super-sample
+				rx_buffers(CHAN_A)(0) <= rxd_a & rx_buffers(CHAN_A)(0)(7 downto 1);
+				-- TODO: Check the registers for the data size
+				if (rx_transferred(CHAN_A) + 1 = 8)
+				then
+					-- TODO: Shift the buffers in some way
+					rx_transferred(CHAN_A) <= 0;
+
+					-- TODO: Check registers
+					if (false)
+					then
+						rx_state(CHAN_A) <= STATE_PARITY;
+					else
+						rx_state(CHAN_A) <= STATE_STOP;
+					end if;
+				else
+					rx_transferred(CHAN_A) <= rx_transferred(CHAN_A) + 1;
+				end if;
+			elsif (rx_state(CHAN_A) = STATE_PARITY)
+			then
+				-- TODO
+				rx_state(CHAN_A) <= STATE_STOP;
+			elsif (rx_state(CHAN_A) = STATE_STOP and rxd_a = '1')
+			then
+				rx_state(CHAN_A) <= STATE_IDLE;
+			end if;
+		end if;
+	end process rx_a_process;
 
 end serial7201;

@@ -165,5 +165,6 @@ begin
 	cs1 <= '0' after 3 us;
 
 	cts1(0) <= '0' after 4 us, '1' after 168 us;
+	dcd2(0) <= '0' after 4 us, '1' after 168 us;
 
 end tb_serial7201;
