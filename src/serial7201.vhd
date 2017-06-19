@@ -9,6 +9,8 @@ use ieee.numeric_std.all;
 entity serial7201 is
 	port
 	(
+		-- TODO: remove
+		odd_parity: in std_logic;
 		-- 1 - clock
 		clock: in std_logic;
 		-- 2 - reset
@@ -87,7 +89,6 @@ architecture serial7201 of serial7201 is
 	signal status_registers: chan_registers;
 	----------------------------------------------------------------------------
 
-
 	-- Tx/Rx declarations -----------------------------------------------------
 	type serial_state is
 	(
@@ -107,11 +108,13 @@ architecture serial7201 of serial7201 is
 	type chan_state is array(0 to 1) of serial_state;
 	type chan_latch is array(0 to 1) of std_logic_vector(7 downto 0);
 	type chan_transferred is array(0 to 1) of integer;
+	type chan_parity is array(0 to 1) of std_logic;
 
 	signal tx_buffers: chan_tx_buffers;
 	signal tx_state: chan_state;
 	signal tx_latch_data: chan_latch;
 	signal tx_transferred: chan_transferred;
+	signal tx_is_data_odd: chan_parity;
 	signal rx_buffers: chan_rx_buffers;
 	signal rx_state: chan_state;
 	signal rx_transferred: chan_transferred;
@@ -119,12 +122,14 @@ architecture serial7201 of serial7201 is
 
 	signal chan_a_tx0: std_logic_vector(7 downto 0);
 	signal chan_a_rx0: std_logic_vector(7 downto 0);
+	signal chan_a_is_data_odd: std_logic;
 
 	signal rx_transferred_a: integer;
 	signal rx_state_a: integer;
 begin
 	chan_a_tx0 <= tx_buffers(CHAN_A)(0);
 	chan_a_rx0 <= rx_buffers(CHAN_A)(0);
+	chan_a_is_data_odd <= tx_is_data_odd(CHAN_A);
 
 	clock_process: process (clock)
 	begin
@@ -170,7 +175,7 @@ begin
 					tx_latch_data(chan) <= data_in;
 				elsif (read_n = '0')
 				then
-					data_out <= rx_buffers(chan)(3);
+					data_out <= rx_buffers(chan)(0);
 				end if;
 			end if;
 		else
@@ -178,16 +183,18 @@ begin
 		end if;
 	end process chip_select_process;
 
-	tx_a_process: process (internal_reset, tx_latch_data(0), txc_a_n)
+	tx_a_process: process (internal_reset, tx_latch_data(CHAN_A), txc_a_n)
+		variable parity: std_logic := '0';
 	begin
 		if (internal_reset'event and internal_reset = '1')
 		then
+			-- Marking high
 			txd_a <= '1';
 			tx_transferred(CHAN_A) <= 0;
 			tx_state(CHAN_A) <= STATE_IDLE;
 		elsif (tx_latch_data(CHAN_A)'event)
 		then
-			tx_buffers(CHAN_A)(0) <= tx_latch_data(0);
+			tx_buffers(CHAN_A)(0) <= tx_latch_data(CHAN_A);
 		elsif (cts_a_n = '0' and txc_a_n'event and txc_a_n = '0')
 		then
 			if (tx_state(CHAN_A) = STATE_IDLE)
@@ -195,10 +202,15 @@ begin
 				-- Pull line low for start bit, go to data state
 				txd_a <= '0';
 				tx_state(CHAN_A) <= STATE_DATA;
+				-- Save the parity bit for later
+				for i in 7 downto 0 loop
+					parity := parity xor tx_buffers(CHAN_A)(0)(i);
+				end loop;
+				tx_is_data_odd(CHAN_A) <= parity;
 			elsif (tx_state(CHAN_A) = STATE_DATA)
 			then
 				txd_a <= tx_buffers(CHAN_A)(0)(0);
-				tx_buffers(CHAN_A)(0)(6 downto 0) <= tx_buffers(0)(0)(7 downto 1);
+				tx_buffers(CHAN_A)(0)(6 downto 0) <= tx_buffers(CHAN_A)(0)(7 downto 1);
 				-- TODO: Check against the transfer size in the registers
 				if (tx_transferred(CHAN_A) + 1 = 8)
 				then
@@ -206,7 +218,7 @@ begin
 					tx_transferred(CHAN_A) <= 0;
 
 					--TODO: check registers
-					if (false)
+					if (true)
 					then
 						tx_state(CHAN_A) <= STATE_PARITY;
 					else
@@ -217,7 +229,14 @@ begin
 				end if;
 			elsif (tx_state(CHAN_A) = STATE_PARITY)
 			then
-				-- TODO
+				-- TODO: check the right internal register for odd_parity here
+				if ((odd_parity = '1' and tx_is_data_odd(CHAN_A) = '1') or
+				    (odd_parity = '0' and tx_is_data_odd(CHAN_A) = '0'))
+				then
+					txd_a <= '0';
+				else
+					txd_a <= '1';
+				end if;
 				tx_state(CHAN_A) <= STATE_STOP;
 			elsif (tx_state(CHAN_A) = STATE_STOP)
 			then
@@ -250,7 +269,7 @@ begin
 					rx_transferred(CHAN_A) <= 0;
 
 					-- TODO: Check registers
-					if (false)
+					if (true)
 					then
 						rx_state(CHAN_A) <= STATE_PARITY;
 					else

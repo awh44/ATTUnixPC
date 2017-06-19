@@ -8,6 +8,7 @@ architecture tb_serial7201 of tb_serial7201 is
 	component serial7201 is
 		port
 		(
+			odd_parity: in std_logic;
 			clock: in std_logic;
 			reset_n: in std_logic;
 			dcd_a_n: in std_logic;
@@ -41,6 +42,7 @@ architecture tb_serial7201 of tb_serial7201 is
 
 	signal clock: std_logic := '0';
 	signal dclock: std_logic := '0';
+	signal odd_parity: std_logic := '0';
 
 	signal reset1: std_logic := '0';
 	signal dcd1: std_logic_vector(1 downto 0);
@@ -80,6 +82,7 @@ begin
 	serial1: serial7201
 		port map
 		(
+			odd_parity => odd_parity,
 			clock => clock,
 			reset_n => reset1,
 			dcd_a_n => dcd1(0),
@@ -113,6 +116,7 @@ begin
 	serial2: serial7201
 		port map
 		(
+			odd_parity => odd_parity,
 			clock => clock,
 			reset_n => reset2,
 			dcd_a_n => dcd2(0),
@@ -164,7 +168,7 @@ begin
 	data_in1 <= "01010101" after 2 ns;
 	cs1 <= '0' after 3 us;
 
-	cts1(0) <= '0' after 4 us, '1' after 168 us;
-	dcd2(0) <= '0' after 4 us, '1' after 168 us;
+	cts1(0) <= '0' after 4 us, '1' after 184 us;
+	dcd2(0) <= '0' after 4 us, '1' after 184 us;
 
 end tb_serial7201;
